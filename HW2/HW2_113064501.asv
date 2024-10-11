@@ -1,0 +1,55 @@
+clear all
+clc;
+
+%% (a)
+M = 100;
+x = randn(1, M);
+
+r_unbiased = [];
+r_biased = [];
+
+for m = -M+1 : M-1
+    cur = 0;
+    for n = 1 : M - abs(m)
+        cur = cur + x(n) * x(n + abs(m));
+    end
+    r_unbiased = [r_unbiased cur / (M - abs(m))];
+    r_biased = [r_biased cur / M];
+end
+
+delta = linspace(-M+1, M-1, 2*M-1);
+
+figure(1)
+grid on; 
+hold on;
+stem(delta, r_unbiased)
+stem(delta, r_biased);
+xlabel('m');
+ylabel('');
+legend("$\hat{r}(m)$", '$r''(m)$', 'Interpreter', 'latex')
+
+%% (b)
+R_unbiased_25 = xcorr(r_unbiased, 25);
+R_unbiased_100 = xcorr(r_biased, 100);
+
+R_biased_25 = xcorr(r_biased, 25);
+R_biased_100 = xcorr(r_biased, 100);
+
+
+eigen_R_unbiased_25 = eig(R_unbiased_25);
+eigen_R_unbiased_100 = eig(R_unbiased_100);
+eigen_R_biased_25 = eig(R_biased_25);
+eigen_R_biased_100 = eig(R_biased_100);
+
+if all(eigen_R_unbiased_25 >= 0)
+    disp('The matrix R_{25} is positive semidefinite.');
+else
+    disp('The matrix R_{25} is not positive semidefinite.');
+end
+
+eig_R100 = eig(R_100);
+if all(eig_R100 >= 0)
+    disp('The matrix R_{100} is positive semidefinite.');
+else
+    disp('The matrix R_{100} is not positive semidefinite.');
+end
