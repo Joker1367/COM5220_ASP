@@ -43,8 +43,7 @@ SE_1_NLMS   = zeros(total_trial, 1);
 SE_1_VSLMS  = zeros(total_trial, 1);
 SE_2_LMS    = zeros(total_trial, 1);
 SE_2_NLMS   = zeros(total_trial, 1);
-SE_2_VSLMS  
-= zeros(total_trial, 1);
+SE_2_VSLMS  = zeros(total_trial, 1);
 
 for trial = 1 : total_trial
     s = randi([0, 1], num_samples, 1) * 2 - 1;                          % Generate ±1 random signal (information signal)
