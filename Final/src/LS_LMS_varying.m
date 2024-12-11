@@ -2,7 +2,7 @@ clear all;
 clc;
 close all;
 
-load 'project_data2024.mat';
+load '../data/project_data2024.mat';
 
 %% System Specification
 train_length = 50;
@@ -115,4 +115,4 @@ fprintf('Static Channel Case BER2 is %.5e \n',errorCount2/(2*train_length*total_
 
 %% ==================== Save the result ====================
 [ans_varying_1, ans_varying_2] = QPSK_symbol2bit(result_1, result_2);
-save(['ans_varying.mat'], 'ans_varying_1', 'ans_varying_2');
+save(['../ans/ans_varying.mat'], 'ans_varying_1', 'ans_varying_2');
