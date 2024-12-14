@@ -1,8 +1,8 @@
 clear all;
-clc; 
+clc;
 close all;
 
-load 'project_data2024.mat';
+load '../data/project_data2024.mat';
 
 train_length = 50;
 data_length = 400;
@@ -10,11 +10,13 @@ total_length = train_length + data_length;
 total_operation = length(data_varying_1) / total_length;
 
 L_max = 20;              % filter length
-alpha = 9e-3;    % step size
-N_max = 30;             % MAF fileter length
+alpha = 9e-3;            % step size
+N_max = 30;              % MAF fileter length
 
 BER_1 = zeros(N_max, L_max);
 BER_2 = zeros(N_max, L_max);
+evm_1 = zeros(N_max, L_max);
+evm_2 = zeros(N_max, L_max);
 
 for L = 1 : L_max
     for N = 1 : N_max
@@ -36,6 +38,9 @@ for L = 1 : L_max
         idx_total = 1;
         idx_train = 1;
         idx_data  = 1;
+
+        evm_tmp_1 = 0;
+        evm_tmp_2 = 0;
         
         for operation = 1 : total_operation
             x_1 = zeros(L, 1);
@@ -59,6 +64,8 @@ for L = 1 : L_max
                 else
                     e_1(idx_total) = QPSK_decision(y_1) - y_1;                          % Decision Directed Mode
                     e_2(idx_total) = QPSK_decision(y_2) - y_2;
+                    evm_tmp_1 = evm_tmp_1 + abs(e_1(idx_total))^2;
+                    evm_tmp_2 = evm_tmp_2 + abs(e_2(idx_total))^2;
         
                     result_1(idx_data) = QPSK_decision(y_1);
                     result_2(idx_data) = QPSK_decision(y_2);
@@ -79,13 +86,16 @@ for L = 1 : L_max
         train_ans_2 = repmat(train_ans_2, 1, total_operation);
         BER_1(N, L) = sum(train_result_1 ~= train_ans_1) / (2*train_length*total_operation);
         BER_2(N, L) = sum(train_result_2 ~= train_ans_2) / (2*train_length*total_operation);
+        evm_1(N, L) = sqrt(evm_tmp_1 / (data_length * total_operation)) * 100;
+        evm_2(N, L) = sqrt(evm_tmp_2 / (data_length * total_operation)) * 100;
     end
 end
 
 BER = BER_1 + BER_2 / 2;
 save(['BER_varying.mat'], 'BER_1', 'BER_2', 'BER');
+save(['../performance/evm_varying.mat'], 'evm_1', 'evm_2');
 
-%%
+%% BER
 load BER_varying.mat
 [min_val, linear_idx] = min(BER(:));
 [row, col] = ind2sub(size(BER), linear_idx);
@@ -100,3 +110,35 @@ xlabel('X-axis');
 ylabel('Y-axis');
 zlabel('Z-axis');
 title('varying');
+
+%% EVM
+load ../performance/evm_varying.mat
+[min_val, linear_idx] = min(evm_1(:));
+[row, col] = ind2sub(size(evm_1), linear_idx);
+disp([row col]);
+
+figure;
+hold on;
+surf(evm_1);
+colorbar;
+
+%view(45, 30); % 調整觀察角度 (方位角 45°, 仰角 30°)
+xlabel('N');
+ylabel('L');
+zlabel('EVM');
+title('Varying 1');
+
+[min_val, linear_idx] = min(evm_2(:));
+[row, col] = ind2sub(size(evm_2), linear_idx);
+disp([row col]);
+
+figure;
+hold on;
+surf(evm_2);
+colorbar;
+
+%view(45, 30); % 調整觀察角度 (方位角 45°, 仰角 30°)
+xlabel('N');
+ylabel('L');
+zlabel('EVM');
+title('Varying 2');
